@@ -143,9 +143,7 @@ def test_projet_voltaire_full_flow(driver):
 
         # 5. Clic sur connexion
         print("🚀 Clic sur 'JE ME CONNECTE'...")
-        submit_btn = driver.find_element(
-            By.CSS_SELECTOR, "button[type='submit'], button:contains('JE ME CONNECTE')"
-        )
+        submit_btn = driver.find_element(By.CSS_SELECTOR, "button[type='submit']")
 
         try:
             submit_btn.click()
