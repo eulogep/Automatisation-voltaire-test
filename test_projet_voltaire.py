@@ -10,17 +10,21 @@ EMAIL = "mabiala@et.esiea.fr"
 PASSWORD = "Jesusestseigneur2024*"
 
 
-def human_type(element, text):
-    """Tape du texte caractère par caractère pour simuler un humain"""
+def human_type(driver, element, text):
+    """Simule une frappe humaine avec nettoyage préalable"""
+    # Nettoyer le champ avec JavaScript (plus fiable que .clear())
+    driver.execute_script("arguments[0].value = '';", element)
+    time.sleep(0.3)
+
     for char in text:
         element.send_keys(char)
-        time.sleep(random.uniform(0.1, 0.25))
+        time.sleep(random.uniform(0.05, 0.15))
 
 
 def force_clear_cookies(driver):
     """Supprime radicalement toute trace de bannière de cookies via injection CSS et JS"""
     print("🧹 Nettoyage agressif des overlays...")
-    
+
     # ÉTAPE 1: Cliquer sur le bouton d'acceptation avec retry (important pour sauvegarder le choix)
     for attempt in range(3):
         try:
@@ -30,23 +34,25 @@ def force_clear_cookies(driver):
             cookie_btn.click()
             print(f"✅ Bouton cookies cliqué (tentative {attempt + 1})")
             time.sleep(1)
-            
+
             # Vérifier que le bouton a disparu
             try:
                 WebDriverWait(driver, 2).until(
-                    EC.invisibility_of_element_located((By.ID, "onetrust-accept-btn-handler"))
+                    EC.invisibility_of_element_located(
+                        (By.ID, "onetrust-accept-btn-handler")
+                    )
                 )
                 print("✅ Bannière disparue")
                 break
             except Exception:
                 print("⚠️ Bannière toujours présente, nouvelle tentative...")
                 continue
-                
+
         except Exception:
             if attempt == 0:
                 print("ℹ️ Bouton cookies non trouvé")
             break
-    
+
     # ÉTAPE 2: Suppression agressive du DOM
     script = """
     // 1. Supprimer les éléments par ID
@@ -73,7 +79,7 @@ def force_clear_cookies(driver):
 
 def test_projet_voltaire_full_flow(driver):
     wait = WebDriverWait(driver, 15)
-    
+
     # 1. Homepage
     print("📍 Accès à la homepage...")
     driver.get("https://www.projet-voltaire.fr/")
@@ -82,7 +88,9 @@ def test_projet_voltaire_full_flow(driver):
     # 2. Cliquer sur "Se connecter"
     try:
         print("🔗 Recherche du bouton 'Se connecter'...")
-        login_btn = wait.until(EC.element_to_be_clickable((By.PARTIAL_LINK_TEXT, "Se connecter")))
+        login_btn = wait.until(
+            EC.element_to_be_clickable((By.PARTIAL_LINK_TEXT, "Se connecter"))
+        )
         login_btn.click()
         print("✅ Clic sur 'Se connecter' effectué")
         time.sleep(2)
@@ -97,30 +105,42 @@ def test_projet_voltaire_full_flow(driver):
     try:
         print(f"📍 URL actuelle: {driver.current_url}")
         print("🔍 Recherche du champ identifiant...")
-        
+
         # Le champ utilise le placeholder "Identifiant" au lieu de name="auth_login"
-        email_input = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "input[placeholder='Identifiant'], input[name='auth_login'], input[type='email']")))
-        
+        email_input = wait.until(
+            EC.element_to_be_clickable(
+                (
+                    By.CSS_SELECTOR,
+                    "input[placeholder='Identifiant'], input[name='auth_login'], input[type='email']",
+                )
+            )
+        )
+
         driver.execute_script("arguments[0].scrollIntoView(true);", email_input)
         email_input.clear()
-        
+
         print("✍️ Saisie de l'email...")
-        human_type(email_input, EMAIL)
-        
+        human_type(driver, email_input, EMAIL)
+
         # Mot de passe
-        pass_input = driver.find_element(By.CSS_SELECTOR, "input[placeholder='Mot de passe'], input[name='auth_password'], input[type='password']")
-        human_type(pass_input, PASSWORD)
-        
+        pass_input = driver.find_element(
+            By.CSS_SELECTOR,
+            "input[placeholder='Mot de passe'], input[name='auth_password'], input[type='password']",
+        )
+        human_type(driver, pass_input, PASSWORD)
+
         # 5. Clic sur connexion
-        submit_btn = driver.find_element(By.CSS_SELECTOR, "button[type='submit'], button:contains('JE ME CONNECTE')")
-        
+        submit_btn = driver.find_element(
+            By.CSS_SELECTOR, "button[type='submit'], button:contains('JE ME CONNECTE')"
+        )
+
         try:
             submit_btn.click()
         except Exception:
             driver.execute_script("arguments[0].click();", submit_btn)
-            
+
         print("🚀 Tentative de connexion envoyée")
-        
+
     except Exception as e:
         driver.save_screenshot("screenshots/fatal_error_login.png")
         print(f"❌ Erreur critique : {e}")
