@@ -136,5 +136,5 @@ git commit -m "feat: Description de la modification"
 
 ---
 
-**Créé par** : Antigravity AI  
+**Créé par** : EULOGE MABIALA  
 **Dernière mise à jour** : 2026-02-13
