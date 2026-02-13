@@ -117,19 +117,32 @@ def test_projet_voltaire_full_flow(driver):
         )
 
         driver.execute_script("arguments[0].scrollIntoView(true);", email_input)
-        email_input.clear()
 
-        print("✍️ Saisie de l'email...")
-        human_type(driver, email_input, EMAIL)
+        # Vérifier si le champ est déjà rempli (auto-fill Chrome)
+        email_value = email_input.get_attribute("value") or ""
+
+        if len(email_value) > 5:  # Si déjà rempli (au moins partiellement)
+            print(f"✅ Email déjà pré-rempli par Chrome: {email_value[:10]}...")
+        else:
+            print("✍️ Saisie de l'email...")
+            human_type(driver, email_input, EMAIL)
 
         # Mot de passe
         pass_input = driver.find_element(
             By.CSS_SELECTOR,
             "input[placeholder='Mot de passe'], input[name='auth_password'], input[type='password']",
         )
-        human_type(driver, pass_input, PASSWORD)
+
+        pass_value = pass_input.get_attribute("value") or ""
+
+        if len(pass_value) > 5:  # Si déjà rempli
+            print(f"✅ Mot de passe déjà pré-rempli par Chrome")
+        else:
+            print("✍️ Saisie du mot de passe...")
+            human_type(driver, pass_input, PASSWORD)
 
         # 5. Clic sur connexion
+        print("🚀 Clic sur 'JE ME CONNECTE'...")
         submit_btn = driver.find_element(
             By.CSS_SELECTOR, "button[type='submit'], button:contains('JE ME CONNECTE')"
         )
@@ -139,7 +152,7 @@ def test_projet_voltaire_full_flow(driver):
         except Exception:
             driver.execute_script("arguments[0].click();", submit_btn)
 
-        print("🚀 Tentative de connexion envoyée")
+        print("✅ Tentative de connexion envoyée")
 
     except Exception as e:
         driver.save_screenshot("screenshots/fatal_error_login.png")
