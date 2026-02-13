@@ -9,8 +9,16 @@ from datetime import datetime
 
 @pytest.fixture(scope="module")
 def driver():
+    # Chemin du profil Chrome dédié
+    profile_dir = os.path.join(os.getcwd(), "chrome_profile")
+    
     options = Options()
     options.binary_location = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
+    
+    # Profil Chrome persistant pour mémoriser les cookies
+    options.add_argument(f"--user-data-dir={profile_dir}")
+    options.add_argument("--profile-directory=Default")
+    
     # stealth mode
     options.add_argument("--disable-blink-features=AutomationControlled")
     options.add_experimental_option("excludeSwitches", ["enable-automation"])
